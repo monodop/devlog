@@ -1,0 +1,13 @@
+{
+    "compilerOptions": {
+        "outDir": "./dist/",
+        "noImplicitAny": true,
+        "strict": true,
+        "target": "es6",
+        "lib": ["es6", "dom"],
+        "jsx": "react",
+        "jsxFactory": "createElement",
+        "allowJs": true,
+        "moduleResolution": "node"
+    }
+}
