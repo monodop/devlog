@@ -70,9 +70,11 @@ export default async function* App(this: Context<IAppProps>, {}: IAppProps) {
                 </div>
             </div>
         );
-        let container = document.getElementById("dataContainer");
-        if (container)
-            container.scrollTop = container.scrollHeight;
+        if (autoscroll) {
+            let container = document.getElementById("dataContainer");
+            if (container)
+                container.scrollTop = container.scrollHeight;
+        }
     }
 }
 
