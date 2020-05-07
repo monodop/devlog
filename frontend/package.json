@@ -6,7 +6,8 @@
   "scripts": {
     "antlr": "antlr4ts -visitor src/FilterGrammar/FilterGrammar.g4",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "webpack-dev-server --open --config webpack.dev.ts"
+    "dev": "webpack-dev-server --open --config webpack.dev.ts",
+    "build": "webpack --config webpack.release.ts"
   },
   "keywords": [],
   "author": "",

@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"strings"
 	"sync"
 
 	"nhooyr.io/websocket/wsjson"
@@ -35,20 +34,20 @@ func startWsListener(exitChannel chan bool, messageChannel chan string) {
 			man.AddMessage(msg)
 		}
 	}()
-	err := http.ListenAndServe("localhost:9091", http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
-		if strings.HasPrefix(request.URL.Path, "/ws") {
-			connection, err := websocket.Accept(writer, request, &websocket.AcceptOptions{
-				OriginPatterns: []string{"localhost:8080"},
-			})
-			if err != nil {
-				fmt.Println(err)
+	http.HandleFunc("/ws", func(writer http.ResponseWriter, request *http.Request) {
+		connection, err := websocket.Accept(writer, request, &websocket.AcceptOptions{
+			OriginPatterns: []string{"*"},
+		})
+		if err != nil {
+			fmt.Println(err)
 				return
 			}
-			defer connection.Close(websocket.StatusInternalError, "Unexpected error. Connection closing")
+		defer connection.Close(websocket.StatusInternalError, "Unexpected error. Connection closing")
 
-			handleWsConnection(connection, request, &man)
-		}
-	}))
+		handleWsConnection(connection, request, &man)
+	})
+	http.Handle("/", http.FileServer(http.Dir("./frontend")))
+	err := http.ListenAndServe(":9091", nil)
 	fmt.Println(err)
 }
 

@@ -8,7 +8,7 @@ import (
 )
 
 func startTcpListener(exitChannel chan bool, messageChannel chan string) {
-	address := "localhost:9090"
+	address := ":9090"
 
 	listener, err := net.Listen("tcp4", address)
 	if err != nil {

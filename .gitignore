@@ -16,3 +16,5 @@ frontend/src/FilterGrammar/FilterGrammarListener.ts
 frontend/src/FilterGrammar/FilterGrammarParser.ts
 
 frontend/src/FilterGrammar/FilterGrammarVisitor.ts
+
+frontend/dist/
