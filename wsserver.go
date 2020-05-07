@@ -19,13 +19,25 @@ type wsMessage struct {
 func startWsListener(exitChannel chan bool, messageChannel chan string) {
 	man := workerManager{
 		nextWorkerId: 0,
-		nextDataId:   5,
+		nextDataId:   100,
 		workers:      make(map[int]chan string),
-		data: []string{
-			`{"id": 1, "app": "test", "logger": "MyApp.MyLogger", "message": "Hello World!"}`,
-			`{"id": 2, "app": "test", "logger": "MyApp.MyLogger", "message": "New message"}`,
-			`{"id": 3, "app": "other", "logger": "MyApp.Boi", "message": "New message"}`,
-			`{"id": 4, "app": "other", "logger": "MyApp.Boi", "message": "World Hello!"}`,
+		data:         []string{
+			// `{"id": 1, "app": "test", "logger": "MyApp.MyLogger", "message": "Hello World!"}`,
+			// `{"id": 2, "app": "test", "logger": "MyApp.MyLogger", "message": "New message"}`,
+			// `{"id": 3, "app": "other", "logger": "MyApp.Boi", "message": "New message"}`,
+			// `{"id": 4, "app": "other", "logger": "MyApp.Boi", "message": "World Hello!"}`,
+			// `{"id": 5, "app": "other", "logger": "MyApp.Boi", "message": "World Hello!"}`,
+			// `{"id": 6, "app": "other", "logger": "MyApp.Boi", "message": "World Hello!"}`,
+			// `{"id": 7, "app": "other", "logger": "MyApp.Boi", "message": "World Hello!"}`,
+			// `{"id": 8, "app": "other", "logger": "MyApp.Boi", "message": "World Hello!"}`,
+			// `{"id": 9, "app": "other", "logger": "MyApp.Boi", "message": "World Hello!"}`,
+			// `{"id": 10, "app": "other", "logger": "MyApp.Boi", "message": "World Hello!"}`,
+			// `{"id": 11, "app": "other", "logger": "MyApp.Boi", "message": "World Hello!"}`,
+			// `{"id": 12, "app": "other", "logger": "MyApp.Boi", "message": "World Hello!"}`,
+			// `{"id": 13, "app": "other", "logger": "MyApp.Boi", "message": "World Hello!"}`,
+			// `{"id": 14, "app": "other", "logger": "MyApp.Boi", "message": "World Hello!"}`,
+			// `{"id": 15, "app": "other", "logger": "MyApp.Boi", "message": "World Hello!"}`,
+			// `{"id": 16, "superduperlong": "other", "logger": "MyApp.Boi", "message": "World Hello!"}`,
 		},
 	}
 	go func() {
@@ -40,8 +52,8 @@ func startWsListener(exitChannel chan bool, messageChannel chan string) {
 		})
 		if err != nil {
 			fmt.Println(err)
-				return
-			}
+			return
+		}
 		defer connection.Close(websocket.StatusInternalError, "Unexpected error. Connection closing")
 
 		handleWsConnection(connection, request, &man)
