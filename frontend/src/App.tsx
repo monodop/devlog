@@ -34,7 +34,7 @@ export default async function* App(this: Context<IAppProps>, {}: IAppProps) {
     
     await new Promise((resolve) => webSocket.onopen = () => resolve());
     for await ({} of this) {
-        let filteredData = data.filter(dataFilter(filter)).filter((d, i) => i < 20);
+        let filteredData = data.filter(dataFilter(filter)).slice(-20);
         yield (
             <div class={css(styles.page)}>
                 <div class={css(styles.header)}>DevLog listening on tcp://localhost:9090/</div>
