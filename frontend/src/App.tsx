@@ -20,11 +20,17 @@ export default async function* App(this: Context<IAppProps>, {}: IAppProps) {
     }
 
     let filter = '';
+    let autoscroll = true;
 
     const onFilterChange = (ev: Event) => {
         filter = (ev.currentTarget as HTMLInputElement).value;
         this.refresh();
     };
+
+    const onAutoscrollChange = (ev: Event) => {
+        autoscroll = (ev.currentTarget as HTMLInputElement).checked;
+        this.refresh();
+    }
     
     await new Promise((resolve) => webSocket.onopen = () => resolve());
     for await ({} of this) {
@@ -32,20 +38,41 @@ export default async function* App(this: Context<IAppProps>, {}: IAppProps) {
         yield (
             <div class={css(styles.page)}>
                 <div class={css(styles.header)}>DevLog listening on tcp://localhost:9090/</div>
-                <input 
-                    type="text"
-                    placeholder="Search..."
-                    value={filter} 
-                    oninput={onFilterChange} 
-                    class={css(styles.input)} 
-                    />
-                <div class={css(styles.dataContainer)}>
+                <div class={css(styles.controls)}>
+                    <input 
+                        type="text"
+                        name="search"
+                        placeholder="Search..."
+                        value={filter} 
+                        oninput={onFilterChange} 
+                        class={css(styles.searchInput)} 
+                        />
+                    <div class={css(styles.autoscroll)}>
+                        <label
+                            for="autoscroll"
+                            class={css(styles.autoscrollLabel)}
+                            >
+                                Auto Scroll:
+                        </label>
+                        <input
+                            type="checkbox"
+                            name="autoscroll"
+                            checked={autoscroll}
+                            onchange={onAutoscrollChange}
+                            class={css(styles.autoscrollCheckbox)}
+                            />
+                    </div>
+                </div>
+                <div class={css(styles.dataContainer)} id="dataContainer">
                     {filteredData.map((d, i) => (
                         <JsonView crank-key={d.id} data={d} />
                     ))}
                 </div>
             </div>
         );
+        let container = document.getElementById("dataContainer");
+        if (container)
+            container.scrollTop = container.scrollHeight;
     }
 }
 
@@ -57,7 +84,28 @@ const styles = StyleSheet.create({
         display: 'flex',
         flexDirection: 'column',
     },
-    input: {
+    controls: {
+        display: 'flex',
+    },
+    autoscroll: {
+        fontFamily: 'Monospace',
+        marginLeft: '0.5em',
+        whiteSpace: 'nowrap',
+    },
+    autoscrollLabel: {
+        marginRight: '0.5em',
+    },
+    autoscrollCheckbox: {
+        verticalAlign: 'bottom',
+        position: 'relative',
+        top: '-1px',
+        overflow: 'hidden',
+        margin: 0,
+        padding: 0,
+        width: '13px',
+        height: '13px',
+    },
+    searchInput: {
         boxSizing: 'border-box',
         width: '100%',
         marginBottom: '0.5em',
