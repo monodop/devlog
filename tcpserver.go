@@ -2,9 +2,10 @@ package main
 
 import (
 	"bufio"
-	"fmt"
 	"net"
 	"strings"
+
+	"github.com/monodop/devlog/log"
 )
 
 func startTcpListener(exitChannel chan bool, messageChannel chan string) {
@@ -12,16 +13,17 @@ func startTcpListener(exitChannel chan bool, messageChannel chan string) {
 
 	listener, err := net.Listen("tcp4", address)
 	if err != nil {
-		fmt.Println(err)
+		log.Exception(err)
 		return
 	}
 	defer listener.Close()
+	log.Info("TCP server now listening on %s", address)
 
 	nextId := 1
 	for {
 		connection, err := listener.Accept()
 		if err != nil {
-			fmt.Println(err)
+			log.Exception(err)
 			return
 		}
 
@@ -32,17 +34,17 @@ func startTcpListener(exitChannel chan bool, messageChannel chan string) {
 }
 
 func handleConnection(connection net.Conn, id int, messageChannel chan string) {
-	fmt.Printf("Opened TCP connection %d to %s\n", id, connection.RemoteAddr().String())
-	defer fmt.Printf("Closed TCP connection %d to %s\n", id, connection.RemoteAddr().String())
+	log.Info("Opened TCP connection %d to %s", id, connection.RemoteAddr().String())
+	defer log.Info("Closed TCP connection %d to %s", id, connection.RemoteAddr().String())
 	for {
 		data, err := bufio.NewReader(connection).ReadString('\n')
 		if err != nil {
-			fmt.Println(err)
+			log.Exception(err)
 			return
 		}
 
 		line := strings.TrimSpace(string(data))
-		fmt.Printf("%d: %s\n", id, line)
+		log.Info("%d: %s", id, line)
 		messageChannel <- line
 
 		connection.Write([]byte("Thanks\n"))

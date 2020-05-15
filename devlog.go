@@ -1,9 +1,11 @@
 package main
 
-import "fmt"
+import (
+	"github.com/monodop/devlog/log"
+)
 
 func main() {
-	fmt.Println("Hello, world")
+	log.Info("DevLog starting up...")
 	exitChannel := make(chan bool)
 	messageChannel := make(chan string)
 	go startWsListener(exitChannel, messageChannel)

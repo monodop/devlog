@@ -3,13 +3,12 @@ package main
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"sync"
 
-	"nhooyr.io/websocket/wsjson"
-
+	"github.com/monodop/devlog/log"
 	"nhooyr.io/websocket"
+	"nhooyr.io/websocket/wsjson"
 )
 
 type wsMessage struct {
@@ -17,6 +16,8 @@ type wsMessage struct {
 }
 
 func startWsListener(exitChannel chan bool, messageChannel chan string) {
+	address := ":9091"
+
 	man := workerManager{
 		nextWorkerId: 0,
 		nextDataId:   100,
@@ -51,7 +52,7 @@ func startWsListener(exitChannel chan bool, messageChannel chan string) {
 			OriginPatterns: []string{"*"},
 		})
 		if err != nil {
-			fmt.Println(err)
+			log.Exception(err)
 			return
 		}
 		defer connection.Close(websocket.StatusInternalError, "Unexpected error. Connection closing")
@@ -59,8 +60,9 @@ func startWsListener(exitChannel chan bool, messageChannel chan string) {
 		handleWsConnection(connection, request, &man)
 	})
 	http.Handle("/", http.FileServer(http.Dir("./frontend")))
-	err := http.ListenAndServe(":9091", nil)
-	fmt.Println(err)
+	log.Info("WebSocket server now listening on %s", address)
+	err := http.ListenAndServe(address, nil)
+	log.Exception(err)
 }
 
 func handleWsConnection(connection *websocket.Conn, request *http.Request, man *workerManager) {
@@ -72,8 +74,8 @@ func handleWsConnection(connection *websocket.Conn, request *http.Request, man *
 	id := man.AddWorker(channel)
 	defer man.RemoveWorker(id)
 
-	fmt.Printf("Opened WS connection %d to %s\n", id, request.RemoteAddr)
-	defer fmt.Printf("Closed WS connection %d to %s\n", id, request.RemoteAddr)
+	log.Info("Opened WS connection %d to %s", id, request.RemoteAddr)
+	defer log.Info("Closed WS connection %d to %s", id, request.RemoteAddr)
 
 	ctx = connection.CloseRead(ctx)
 
@@ -82,7 +84,7 @@ func handleWsConnection(connection *websocket.Conn, request *http.Request, man *
 			Message: m,
 		})
 		if err != nil {
-			fmt.Println(err)
+			log.Exception(err)
 			return
 		}
 	}
@@ -97,7 +99,7 @@ func handleWsConnection(connection *websocket.Conn, request *http.Request, man *
 				Message: msg,
 			})
 			if err != nil {
-				fmt.Println(err)
+				log.Exception(err)
 				return
 			}
 		}
@@ -110,7 +112,7 @@ func startWsTestConnection() {
 
 	connection, _, err := websocket.Dial(ctx, "ws://localhost:9091/ws", nil)
 	if err != nil {
-		fmt.Println(err)
+		log.Exception(err)
 		return
 	}
 	defer connection.Close(websocket.StatusInternalError, "Unexpected error, closing connection")
@@ -119,11 +121,11 @@ func startWsTestConnection() {
 		message := wsMessage{}
 		err = wsjson.Read(ctx, connection, &message)
 		if err != nil {
-			fmt.Println(err)
+			log.Exception(err)
 			return
 		}
 
-		fmt.Printf("ws: %s\n", message.Message)
+		log.Info("ws: %s", message.Message)
 	}
 }
 
@@ -170,23 +172,49 @@ func max(a, b int) int {
 }
 
 func (man *workerManager) AddMessage(message string) {
-	man.Lock()
 
+	man.Lock()
+	locked := true
+	unlock := func() {
+		if locked {
+			man.Unlock()
+		}
+		locked = false
+	}
+	defer unlock()
+
+	// Generate new unique id for message
 	id := man.nextDataId
 	man.nextDataId++
 
+	// Parse message
 	var parsed map[string]interface{}
-	json.Unmarshal([]byte(message), &parsed)
-	parsed["id"] = id
-	bytes, _ := json.Marshal(parsed)
+	err := json.Unmarshal([]byte(message), &parsed)
+	if err != nil {
+		log.Error("Error serializing message: %s", err)
+		return
+	}
 
+	// Tag message with unique id
+	parsed["_id"] = id
+
+	// Re-serialize message
+	bytes, err := json.Marshal(parsed)
+	if err != nil {
+		log.Error("Error serializing message: %s", err)
+		return
+	}
+
+	// Add message to short-term memory
 	finalMessage := string(bytes)
 	man.data = append(man.data, finalMessage)
 
+	// Clear short-term memory that's older than 100 messages
 	maxLength := 100
 	numToRemove := max(0, len(man.data)-maxLength)
 	man.data = man.data[numToRemove:]
 
-	man.Unlock()
+	// Send message to all listeners
+	unlock()
 	man.Iter(func(w chan string) { w <- finalMessage })
 }
