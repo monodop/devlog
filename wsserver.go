@@ -60,7 +60,7 @@ func startWsListener(exitChannel chan bool, messageChannel chan string) {
 		handleWsConnection(connection, request, &man)
 	})
 	http.Handle("/", http.FileServer(http.Dir("./frontend")))
-	log.Info("WebSocket server now listening on %s", address)
+	log.Info("HTTP/WebSocket server now listening on %s", address)
 	err := http.ListenAndServe(address, nil)
 	log.Exception(err)
 }
