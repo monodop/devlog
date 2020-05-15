@@ -58,7 +58,7 @@ class SearchListener implements FilterGrammarListener {
         if (equals) {
             let key = this.getPlaintextText(equals.plaintext()[0]);
             let value = this.getPlaintextText(equals.plaintext()[1]).toString().toLowerCase();
-            let compareTo = this._data[key].toString().toLowerCase();
+            let compareTo = (this._data[key] || '').toString().toLowerCase();
 
             let startsWith = false;
             let endsWith = false;
@@ -98,7 +98,10 @@ class SearchListener implements FilterGrammarListener {
 }
 
 function plaintextSearch(data: any, f: string): boolean {
-    if (typeof data === 'object') {
+    if (data === null || data === undefined) {
+        return false;
+    }
+    else if (typeof data === 'object') {
         return Object.keys(data).some(k => plaintextSearch(data[k], f));
     }
     else if (typeof data === 'string' || typeof data === 'number') {

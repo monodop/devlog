@@ -11,11 +11,20 @@ type SMap<TValue> = {
 }
 
 function AnyView(this: Context<IJsonViewProps<any>>, {data}: IJsonViewProps<any>) {
-    if (typeof data === 'object') {
-        return <ObjectView data={data} />;
-    }
-    else if (typeof data === 'string' || typeof data === 'number') {
+    if (typeof data === 'string') {
         return <StringView data={data} />;
+    }
+    else if (typeof data === 'number') {
+        return <NumberView data={data} />;
+    }
+    else if (typeof data === 'boolean') {
+        return <BooleanView data={data} />;
+    }
+    else if (data === null) {
+        return <NullView data={data} />;
+    }
+    else if (typeof data === 'object') {
+        return <ObjectView data={data} />;
     }
     else {
         return <div>unknown</div>
@@ -39,14 +48,31 @@ function ObjectView(this: Context<IJsonViewProps<SMap<any>>>, {data}: IJsonViewP
     )
 }
 
-function StringView(this: Context<IJsonViewProps<string|number>>, {data}: IJsonViewProps<string|number>) {
+function StringView(this: Context<IJsonViewProps<string>>, {data}: IJsonViewProps<string>) {
     return (
-        <span>{data}</span>
+        <span class={css(styles.string)}>{data}</span>
+    )
+}
+
+function NumberView(this: Context<IJsonViewProps<number>>, {data}: IJsonViewProps<number>) {
+    return (
+        <span class={css(styles.number)}>{data}</span>
+    )
+}
+
+function BooleanView(this: Context<null>, {data}: IJsonViewProps<boolean>) {
+    return (
+        <span class={css(styles.boolean)}>{data ? 'true' : 'false'}</span>
+    )
+}
+
+function NullView(this: Context<null>, {data}: IJsonViewProps<null>) {
+    return (
+        <span class={css(styles.null)}>null</span>
     )
 }
 
 export default function JsonView(this: Context<IJsonViewProps<any>>, {data}: IJsonViewProps<any>) {
-    
     return (
         <section class={css(styles.jsonview)}>
             <AnyView data={data} />
@@ -75,5 +101,18 @@ const styles = StyleSheet.create({
     },
     objectviewValue: {
         // padding: '0.5em 0.25em',
+    },
+
+    string: {
+        color: '#090',
+    },
+    number: {
+        color: '#33d',
+    },
+    boolean: {
+        color: '#33d',
+    },
+    null: {
+        color: '#d00',
     },
 });
