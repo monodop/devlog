@@ -1,4 +1,4 @@
-import { createElement, Fragment } from "@bikeshaving/crank";
+import { createElement, Fragment, Copy } from "@bikeshaving/crank";
 import { Context } from "@bikeshaving/crank";
 import JsonView from "./JsonView";
 import { dataFilter } from "./SearchListener";
@@ -8,6 +8,7 @@ export interface IAppProps {};
 
 export default async function* App(this: Context<IAppProps>, {}: IAppProps) {
     const data: any[] = [];
+    let frozenData: any[] | null = null;
     const webSocket = new WebSocket(`ws://${location.hostname}:9091/ws`);
     webSocket.onmessage = (ev) => {
         const parsed = JSON.parse(JSON.parse(ev.data).Message);
@@ -21,6 +22,7 @@ export default async function* App(this: Context<IAppProps>, {}: IAppProps) {
 
     let filter = '';
     let autoscroll = true;
+    let frozen = false;
 
     const onFilterChange = (ev: Event) => {
         filter = (ev.currentTarget as HTMLInputElement).value;
@@ -31,10 +33,23 @@ export default async function* App(this: Context<IAppProps>, {}: IAppProps) {
         autoscroll = (ev.currentTarget as HTMLInputElement).checked;
         this.refresh();
     }
+
+    const onFrozenChange = (ev: Event) => {
+        frozen = (ev.currentTarget as HTMLInputElement).checked;
+        
+        if (frozen) {
+            frozenData = [...data];
+        } else {
+            frozenData = null;
+        }
+
+        this.refresh();
+    }
     
     await new Promise((resolve) => webSocket.onopen = () => resolve());
     for await ({} of this) {
-        let filteredData = data.filter(dataFilter(filter)).slice(-20);
+        let filteredData = (frozenData || data).filter(dataFilter(filter)).slice(-20);
+
         yield (
             <div class={css(styles.page)}>
                 <div class={css(styles.header)}>DevLog listening on tcp://localhost:9090/</div>
@@ -47,10 +62,10 @@ export default async function* App(this: Context<IAppProps>, {}: IAppProps) {
                         oninput={onFilterChange} 
                         class={css(styles.searchInput)} 
                         />
-                    <div class={css(styles.autoscroll)}>
+                    <div class={css(styles.checkboxContainer)}>
                         <label
                             for="autoscroll"
-                            class={css(styles.autoscrollLabel)}
+                            class={css(styles.checkboxLabel)}
                             >
                                 Auto Scroll:
                         </label>
@@ -59,7 +74,22 @@ export default async function* App(this: Context<IAppProps>, {}: IAppProps) {
                             name="autoscroll"
                             checked={autoscroll}
                             onchange={onAutoscrollChange}
-                            class={css(styles.autoscrollCheckbox)}
+                            class={css(styles.checkbox)}
+                            />
+                    </div>
+                    <div class={css(styles.checkboxContainer)}>
+                        <label
+                            for="freeze"
+                            class={css(styles.checkboxLabel)}
+                            >
+                                Freeze:
+                        </label>
+                        <input
+                            type="checkbox"
+                            name="freeze"
+                            checked={frozen}
+                            onchange={onFrozenChange}
+                            class={css(styles.checkbox)}
                             />
                     </div>
                 </div>
@@ -89,15 +119,15 @@ const styles = StyleSheet.create({
     controls: {
         display: 'flex',
     },
-    autoscroll: {
+    checkboxContainer: {
         fontFamily: 'Monospace',
         marginLeft: '0.5em',
         whiteSpace: 'nowrap',
     },
-    autoscrollLabel: {
+    checkboxLabel: {
         marginRight: '0.5em',
     },
-    autoscrollCheckbox: {
+    checkbox: {
         verticalAlign: 'bottom',
         position: 'relative',
         top: '-1px',
