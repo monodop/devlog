@@ -34,7 +34,7 @@ RUN npm install && npm run antlr && npm run build
 FROM alpine
 RUN addgroup -S appuser && adduser -S -D -H -h /app appuser
 USER appuser
-COPY --from=gobuilder /build/devlog_server /app/
+COPY --from=gobuilder /go/src/github.com/monodop/devlog/devlog_server /app/
 COPY --from=nodebuilder --chown=appuser:appuser /build/dist /app/frontend
 WORKDIR /app
 EXPOSE 9090:9090
