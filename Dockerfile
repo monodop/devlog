@@ -4,9 +4,9 @@ FROM golang:alpine as gobuilder
 # Install tools needed to get go projects and build
 RUN apk --no-cache add build-base git bzr mercurial gcc
 RUN go get nhooyr.io/websocket
-RUN mkdir /build
-ADD . /build
-WORKDIR /build
+RUN mkdir -p /go/src/github.com/monodop/devlog
+ADD . /go/src/github.com/monodop/devlog
+WORKDIR /go/src/github.com/monodop/devlog
 RUN go build -o devlog_server .
 
 # # # # # Build frontend # # # # #
