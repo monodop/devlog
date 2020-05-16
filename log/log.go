@@ -1,9 +1,24 @@
 package log
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+
+	"github.com/monodop/devlog/env"
+)
 
 func log(level string, message string) {
-	fmt.Printf("[%s] %s\n", level, message)
+	allowedLevels := env.LogLevels()
+	allowed := false
+	for _, allowedLevel := range allowedLevels {
+		if strings.ToUpper(allowedLevel) == strings.ToUpper(level) {
+			allowed = true
+			break
+		}
+	}
+	if allowed {
+		fmt.Printf("[%s] %s\n", level, message)
+	}
 }
 
 func Debug(message string, args ...interface{}) {

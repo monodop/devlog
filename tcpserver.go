@@ -5,11 +5,12 @@ import (
 	"net"
 	"strings"
 
+	"github.com/monodop/devlog/env"
 	"github.com/monodop/devlog/log"
 )
 
 func startTcpListener(exitChannel chan bool, messageChannel chan string) {
-	address := ":9090"
+	address := env.TcpListenAddress()
 
 	listener, err := net.Listen("tcp4", address)
 	if err != nil {

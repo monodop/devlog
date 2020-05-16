@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"sync"
 
+	"github.com/monodop/devlog/env"
 	"github.com/monodop/devlog/log"
 	"nhooyr.io/websocket"
 	"nhooyr.io/websocket/wsjson"
@@ -16,11 +17,11 @@ type wsMessage struct {
 }
 
 func startWsListener(exitChannel chan bool, messageChannel chan string) {
-	address := ":9091"
+	address := env.HttpListenAddress()
 
 	man := workerManager{
 		nextWorkerId: 0,
-		nextDataId:   100,
+		nextDataId:   0,
 		workers:      make(map[int]chan string),
 		data:         []string{
 			// `{"id": 1, "app": "test", "logger": "MyApp.MyLogger", "message": "Hello World!"}`,
@@ -209,8 +210,8 @@ func (man *workerManager) AddMessage(message string) {
 	finalMessage := string(bytes)
 	man.data = append(man.data, finalMessage)
 
-	// Clear short-term memory that's older than 100 messages
-	maxLength := 100
+	// Clear short-term memory that's older than InternalMessageBufferSize messages
+	maxLength := env.InternalMessageBufferSize()
 	numToRemove := max(0, len(man.data)-maxLength)
 	man.data = man.data[numToRemove:]
 

@@ -32,6 +32,9 @@ RUN npm install && npm run antlr && npm run build
 
 # Build final docker image
 FROM alpine
+ENV TCP_ADDRESS :9090
+ENV HTTP_ADDRESS :9091
+ENV LOG_LEVEL INFO
 RUN addgroup -S appuser && adduser -S -D -H -h /app appuser
 USER appuser
 COPY --from=gobuilder /go/src/github.com/monodop/devlog/devlog_server /app/
