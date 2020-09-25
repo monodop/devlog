@@ -36,8 +36,9 @@ func startTcpListener(exitChannel chan bool, messageChannel chan string) {
 func handleConnection(connection net.Conn, id int, messageChannel chan string) {
 	log.Info("Opened TCP connection %d to %s", id, connection.RemoteAddr().String())
 	defer log.Info("Closed TCP connection %d to %s", id, connection.RemoteAddr().String())
+	reader := bufio.NewReader(connection)
 	for {
-		data, err := bufio.NewReader(connection).ReadString('\n')
+		data, err := reader.ReadString('\n')
 		if err != nil {
 			log.Exception(err)
 			return
