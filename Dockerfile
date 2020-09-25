@@ -2,7 +2,7 @@
 FROM golang:alpine as gobuilder
 
 # Install tools needed to get go projects and build
-RUN apk --no-cache add build-base git bzr mercurial gcc
+RUN apk --no-cache add build-base git mercurial gcc
 RUN go get nhooyr.io/websocket
 RUN mkdir -p /go/src/github.com/monodop/devlog
 ADD . /go/src/github.com/monodop/devlog
