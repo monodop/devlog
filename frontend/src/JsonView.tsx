@@ -50,7 +50,7 @@ function ObjectView(this: Context<IJsonViewProps<SMap<any>>>, {data}: IJsonViewP
 
 function StringView(this: Context<IJsonViewProps<string>>, {data}: IJsonViewProps<string>) {
     return (
-        <span class={css(styles.string)}>{data}</span>
+        <pre class={css(styles.string)}>{data}</pre>
     )
 }
 
